@@ -11,12 +11,16 @@
 #
 # ====================================================
 import sys
+import os
+import glob
 import walksearch 
 
 class jobCandidates:
     def __init__(self):
         self._jobList = []
         self._opt = []
+        self._files = []
+        self._dir = []
         self._arv = []
         self._diy = {}
         self._Uasge = ""
@@ -26,25 +30,25 @@ class jobCandidates:
             print(self._Uasge)
             exit()
         # devide the input into option and var
-        for i in range(1, len(sys.argv)):
-            if '=' in sys.argv[i]:
-                #print sys.argv[i]
-                ss = sys.argv[i].split('=')
-                #print ss
+        for argv in sys.argv[1:]:
+            if '=' in argv:
+                ss = argv.split('=')
                 self._diy[ss[0]] = ss[1]
-                continue
-            elif '-' == sys.argv[i][0]:
-                self._opt.append(sys.argv[i])
+            elif '-' == argv[0]:
+                self._opt.append(argv)
+            elif os.path.isdir(argv):
+                self._arv.append(argv)
             else:
-                self._arv.append(sys.argv[i])
+                self._files += glob.glob(argv)
         if len(self._arv) == 0:
             self._arv.append(".")
         
         r = ""
-        self._jobList = []
+        self._jobList = [os.path.abspath(i) for i in self._files]
         if "-r" in self._opt:
             r = "-r"
         Type = []
+        
         # get the default type: .txt, .c, .cxx, .cpp, .C, .py .sh
         if '-txt' in self._opt:
             Type.append('.txt')
@@ -63,7 +67,6 @@ class jobCandidates:
             #    self._diy['sub'] = 'hep_sub -g physics'
             #if not 'exe' in self._diy.keys():
             #    self._diy['exe'] = 'root -l -b -q '
-
         #print self._diy
         #print  "all Type", Type
         for p in self._arv:

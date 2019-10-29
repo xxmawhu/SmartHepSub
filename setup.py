@@ -16,7 +16,6 @@ from setuptools import find_packages
 # import sys
 # import os
 import core
-set_crontab()
 setup(
     name='SmartHepSub',
     version='1.0',
@@ -27,7 +26,7 @@ setup(
 	},  
     entry_points={
         'console_scripts':[
-            'hep.sub = core.hepsub:main',
+            'hep.sub=smartHepsub.hepsub:main',
             ]
         },
     install_requires=[
