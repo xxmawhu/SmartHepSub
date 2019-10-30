@@ -15,7 +15,8 @@ from commands import getoutput
 import subprocess
 from multiprocessing import Pool
 import util
-#hep_sub = "/afs/ihep.ac.cn/soft/common/sysgroup/hep_job/bin/hep_sub -g physics"
+from config import local_config
+Nprocessor = (int(local_config["core"]["Num_Processor"]))
 def SubOneJob(file_sub):
     """
     Args:
@@ -58,7 +59,7 @@ def smartSubOneJob(file_name):
     return
         string: the id
     """
-    sub_command = "/afs/ihep.ac.cn/soft/common/sysgroup/hep_job/bin/hep_sub -g physics"
+    sub_command = local_config["core"]["subBashJob"]
 
     #sub the BOSS job
     file_type = file_name.split('.')[-1]
@@ -67,7 +68,7 @@ def smartSubOneJob(file_name):
         print "\t >>{}".format(file_name)
         return ''
     if file_type == 'txt':
-        sub_command="/afs/ihep.ac.cn/soft/common/sysgroup/hep_job/bin/boss.condor"
+        sub_command = local_config["core"]["subBOSSJob"]
         file_sub = [file_name, sub_command]
         return SubOneJob(file_sub)
 
@@ -103,10 +104,10 @@ def SubJobList(files, sub_command):
     print("Sub %d jobs......"%(len(files)))
     file_sub_list = [[i, sub_command] for i in files]
     idList = []
-    pool = Pool(20)
-    for i in progressbar.progressbar(range(len(files)/20)):
+    pool = Pool(Nprocessor)
+    for i in progressbar.progressbar(range(len(files)/Nprocessor)):
         # 20 processers perform best!
-        ids = pool.map(SubOneJob, file_sub_list[i*20:(i+1)*20])
+        ids = pool.map(SubOneJob, file_sub_list[i*Nprocessor:(i+1)*Nprocessor])
         for ID in ids:
             idList.append(ID)
     
@@ -115,7 +116,7 @@ def SubJobList(files, sub_command):
 
 
 def Sub(files, Types = [],
-        sub_command = "hep_sub"):
+        sub_command = local_config["core"]["subBOSSJob"]):
     """
     Args:
         files: list, the abspath of each job
@@ -129,14 +130,14 @@ def Sub(files, Types = [],
     # list.sort(files)
     file_sub_list = [[i, sub_command] for i in files]
     idList = []
-    pool = Pool(20)
-    if len(files) % 20 == 0 :
-        n_group = len(files)/20
+    pool = Pool(Nprocessor)
+    if len(files) % Nprocessor == 0 :
+        n_group = len(files)/Nprocessor
     else:
-        n_group = len(files)/20 + 1
+        n_group = len(files)/Nprocessor + 1
 
     for i in progressbar.progressbar(range(n_group)):
-        ids = pool.map(SubOneJob, file_sub_list[i*20:(i+1)*20])
+        ids = pool.map(SubOneJob, file_sub_list[i*Nprocessor:(i+1)*Nprocessor])
         for ID in ids:
             idList.append(ID)
     
@@ -145,16 +146,16 @@ def Sub(files, Types = [],
 
 
 def Sub(files,
-        subcommand = "/afs/ihep.ac.cn/soft/common/sysgroup/hep_job/bin/hep_sub",
+        subcommand=local_config["core"]["subcommand"],
         Type='.sh', logID=''):
     if not files:
         print("No Job found!!!")
         return
     # list.sort(files)
     print("Sub %d jobs......"%(len(files)))
-    for i in progressbar.progressbar(range(len(files)/20)):
+    pool = Pool(Nprocessor)
+    for i in progressbar.progressbar(range(len(files)/Nprocessor)):
         JOB = os.path.split(files[i])
-        pool = Pool(20)
         getoutput('cd %s; %s %s'%(JOB[0], "chmod +x", JOB[1]))
         out = getoutput('cd %s; %s %s'%(JOB[0], subcommand, JOB[1]))
         #print('cd %s; %s %s'%(JOB[0], subcommand, JOB[1]))
@@ -178,14 +179,14 @@ def smartSub(files):
     #list.sort(files)
     print("Sub %d jobs......"%(len(files)))
     idList = []
-    pool = Pool(20)
-    if len(files) % 20 == 0 :
-        n_group = len(files)/20
+    pool = Pool(Nprocessor)
+    if len(files) % Nprocessor == 0 :
+        n_group = len(files)/Nprocessor
     else:
-        n_group = len(files)/20 + 1
+        n_group = len(files)/Nprocessor + 1
     for i in progressbar.progressbar(range(n_group)):
         # 20 processers perform best!
-        ids = pool.map(smartSubOneJob, files[i*20:(i+1)*20])
+        ids = pool.map(smartSubOneJob, files[i*Nprocessor:(i+1)*Nprocessor])
         for ID in ids:
             idList.append(ID)
     pool.close()
@@ -216,7 +217,7 @@ def SubBash(jobs, logID='.log'):
     return->list
         the job ID list
     """
-    hep_sub = "/afs/ihep.ac.cn/soft/common/sysgroup/hep_job/bin/hep_sub -g physics"
+    hep_sub = local_config["core"]["subcommand"]
     sub_command = [hep_sub for i in jobs]
     return SubJobList(jobs, sub_command)
 

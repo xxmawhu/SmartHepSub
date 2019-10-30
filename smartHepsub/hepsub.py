@@ -13,6 +13,7 @@
 # ====================================================
 from jobCandidates import jobCandidates
 import hep
+from config import local_config
 _USAGE = '''
 Usage:  [option] [files or directory]
 Option: 
@@ -49,7 +50,7 @@ class hepsub(jobCandidates):
         if 'exe' in self._diy.keys():
             #the sub is not set, we set the subway is 'hep_sub -g physics'
             if not 'sub' in self._diy.keys():
-                self._diy['sub'] = 'hep_sub -g physics '
+                self._diy['sub'] = local_config['core']["subcommand"]
             hep.SubDIY(self._jobList, self._diy['exe'], self._diy['sub'])
             return
         # if the subway is specially setted, but the exe way maybe not setted
@@ -64,7 +65,7 @@ class hepsub(jobCandidates):
             # the exe way is usually setted, if not set is as 'root -l -b -q'
             # if the sub way is boss.condor, sub it directly
             if not 'sub' in self._diy.keys():
-                self._diy['sub'] = "hep_sub -g physics"
+                self._diy['sub'] = local_config['core']["subcommand"]
             if not 'exe' in self._diy.keys():
                 self._diy['exe'] = 'root -l -b -q'
             hep.SubDIY(self._jobList, self._diy['exe'], self._diy['sub'])

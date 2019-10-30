@@ -18,7 +18,7 @@ from setuptools import find_packages
 import core
 setup(
     name='SmartHepSub',
-    version='1.0',
+    version='1.1',
     author='Xin-Xin Ma',
     packages=find_packages(),
     project_urls={
@@ -32,5 +32,6 @@ setup(
     install_requires=[
         'termcolor',
         'progressbar',
+        "configparser",
         ]
 )
